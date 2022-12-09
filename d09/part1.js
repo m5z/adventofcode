@@ -63,7 +63,7 @@ async function processLineByLine() {
         ++hi;
         if (Math.abs(hi - ti) + Math.abs(hj - tj) > 1) {
           ti = hi - 1;
-          tj = hj;
+          // tj = hj;
         }
         grid.set([ti, tj], 1)
       }
@@ -72,7 +72,7 @@ async function processLineByLine() {
         --hi;
         if (Math.abs(hi - ti) + Math.abs(hj - tj) > 1) {
           ti = hi + 1;
-          tj = hj;
+          // tj = hj;
         }
         grid.set([ti, tj], 1)
       }
@@ -80,7 +80,7 @@ async function processLineByLine() {
       for (let k = 0; k < move[1]; ++k) {
         ++hj;
         if (Math.abs(hi - ti) + Math.abs(hj - tj) > 1) {
-          ti = hi;
+          // ti = hi;
           tj = hj - 1;
         }
         grid.set([ti, tj], 1)
@@ -89,7 +89,7 @@ async function processLineByLine() {
       for (let k = 0; k < move[1]; ++k) {
         --hj;
         if (Math.abs(hi - ti) + Math.abs(hj - tj) > 1) {
-          ti = hi;
+          // ti = hi;
           tj = hj + 1;
         }
         grid.set([ti, tj], 1)
