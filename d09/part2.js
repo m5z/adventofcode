@@ -3,19 +3,46 @@ const readline = require('readline');
 
 function updateRope(ropeCoords, tailVisited) {
   for (let i = 1; i < ropeCoords.length; ++i) {
-    if (Math.abs(ropeCoords[i][0] - ropeCoords[i - 1][0]) == 2) {
-      if (Math.abs(ropeCoords[i][1] - ropeCoords[i - 1][1]) == 1) {
-        ropeCoords[i][1] = ropeCoords[i - 1][1];
-      }
-      ropeCoords[i][0] += (ropeCoords[i - 1][0] - ropeCoords[i][0]) / 2;
-    } else if (Math.abs(ropeCoords[i][1] - ropeCoords[i - 1][1]) == 2) {
-      if (Math.abs(ropeCoords[i][0] - ropeCoords[i - 1][0]) == 1) {
-        ropeCoords[i][0] = ropeCoords[i - 1][0];
-      }
-      ropeCoords[i][1] += (ropeCoords[i - 1][1] - ropeCoords[i][1]) / 2;
+    if (Math.abs(ropeCoords[i][0] - ropeCoords[i - 1][0]) > 1) {
+      ropeCoords[i][1] += Math.sign(ropeCoords[i - 1][1] - ropeCoords[i][1]);
+      ropeCoords[i][0] += Math.sign(ropeCoords[i - 1][0] - ropeCoords[i][0]);
+    } else if (Math.abs(ropeCoords[i][1] - ropeCoords[i - 1][1]) > 1) {
+      ropeCoords[i][0] += Math.sign(ropeCoords[i - 1][0] - ropeCoords[i][0]);
+      ropeCoords[i][1] += Math.sign(ropeCoords[i - 1][1] - ropeCoords[i][1]);
     }
   }
   tailVisited.add(`${ropeCoords[ropeCoords.length - 1][0]},${ropeCoords[ropeCoords.length - 1][1]}`);
+  // printRope(ropeCoords);
+}
+
+function printRope(ropeCoords) {
+  let minI = minJ = maxI = maxJ = 0;
+  for (let [i, j] of ropeCoords) {
+    if (i < minI) {
+      minI = i;
+    } else if (i > maxI) {
+      maxI = i;
+    }
+    if (j < minJ) {
+      minJ = j;
+    } else if (j > maxJ) {
+      maxJ = j;
+    }
+  }
+
+  const grid = [];
+  for (let i = 0; i < maxI - minI + 1; ++i) {
+    grid.push(Array(maxJ - minJ + 1).fill(0));
+  }
+  
+  for (let [i, j] of ropeCoords) {
+    grid[i - minI][j - minJ] = 1;
+  }
+
+  for (let row of grid) {
+    console.log(row.join(''));
+  }
+  console.log('');
 }
 
 async function processLineByLine() {
@@ -46,6 +73,7 @@ async function processLineByLine() {
 
   tailVisited.add('0,0');
   for (const move of moves) {
+    // console.log(move);
     if (move[0] === 'D') {
       for (let step = 0; step < move[1]; ++step) {
         ++ropeCoords[0][0];
@@ -69,7 +97,6 @@ async function processLineByLine() {
     }
   }
   
-  console.log(tailVisited);
   console.log(tailVisited.size);
 }
 
