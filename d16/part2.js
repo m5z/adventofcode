@@ -2,9 +2,7 @@ const fs = require('fs');
 const readline = require('readline');
 
 const INPUT_FILE = 'in1';
-
-const MIN = 0;
-const MAX = 4000000;
+const MAX_TIME = 26;
 
 async function processLineByLine() {
   const fileStream = fs.createReadStream(INPUT_FILE);
@@ -14,59 +12,113 @@ async function processLineByLine() {
     crlfDelay: Infinity
   });
 
-  const sensors = [];
-  const beacons = [];
+  const nodes = [];
+  const nameToNode = new Map();
+  let currentId = 0;
+
   for await (const line of line_reader) {
-    const split = line.split('=');
-    sensors.push([+split[1].split(',')[0], +split[2].split(':')[0]]);
-    beacons.push([+split[3].split(',')[0], +split[4]]);
+    const split = line.split(';')
+    const valveName = split[0].split(' ')[1];
+    const rate = +split[0].split('=')[1];
+    const neighbors = split[1].replace(" valve ", " valves ").split(" valves ")[1].split(", ");
+    const node = new Valve(valveName, currentId, rate, neighbors);
+    ++currentId;
+    nameToNode.set(valveName, node);
+    nodes.push(node);
   }
 
-  const checkedRanges = new Array(MAX + 1);
-  for (let i = 0; i < checkedRanges.length; ++i) {
-    checkedRanges[i] = [];
-  }
-
-  for (let i = 0; i < sensors.length; ++i) {
-    const reach = Math.abs(sensors[i][0] - beacons[i][0]) + Math.abs(sensors[i][1] - beacons[i][1]);
-    
-    for (let y = MIN; y <= MAX; ++y) {
-      const verticalDiff = Math.abs(sensors[i][1] - y);
-      if (verticalDiff <= reach) {
-        if (!checkedRanges[y]) {
-          checkedRanges[y] = [];
-        }
-        checkedRanges[y].push([sensors[i][0] - (reach - verticalDiff), sensors[i][0] + (reach - verticalDiff)]);
-      }
+  for (const node of nodes) {
+    for (let i = 0; i < node.neighbors.length; ++i) {
+      node.neighbors[i] = nameToNode.get(node.neighbors[i]);
     }
   }
 
-  for (let i = 0; i <= MAX; ++i) {
-    const mergedRanges = mergeRanges(checkedRanges[i]);
+  const distances = calculateDistances(nodes);
 
-    if (mergedRanges.length !== 1) {
-      console.log((mergedRanges[0][1] + 1)* 4000000 + i);
-      return;
-    }
-  }
+  const maxPressure = getMaxPressure(nodes, distances, nameToNode.get("AA"));
+  console.log(maxPressure);
 }
 
 processLineByLine();
 
-function mergeRanges(ranges) {
-  const stack = [];
+function getMaxPressure(nodes, distances, startingNode) {
+  const stack = [[startingNode, false, MAX_TIME, startingNode, true, MAX_TIME, 0, new Array(nodes.length).fill(false)]];
 
-  ranges.sort((a, b) => a[0] - b[0]);
+  let maxPressure = 0;
+  while (stack.length > 0) {
+    // console.log(stack.length);
 
-  stack.push(ranges[0]);
-  for (const range of ranges.slice(1)) {
-    const top = stack[stack.length - 1];
-    if (top[1] + 1 < range[0]) {
-      stack.push(range);
-    } else if (top[1] < range[1]) {
-      top[1] = range[1];
+    const state = stack.pop();
+    const currentNode1 = state[0];
+    const busy1 = state[1];
+    const timeLeft1 = state[2];
+    const currentNode2 = state[3];
+    const busy2 = state[4];
+    const timeLeft2 = state[5];
+    const currentPressure = state[6];
+    const valves = state[7];
+
+    if (!busy1) {
+      for (let i = 0; i < nodes.length; ++i) {
+        const node = nodes[i];
+        const distance = distances[currentNode1.id][node.id];
+        if (node !== currentNode1 && !valves[node.id] && node.rate > 0 && timeLeft1 - distance - 1 > 0) {
+          const pressure = node.rate * (timeLeft1 - distance - 1);
+          const newValves = [...valves];
+          newValves[node.id] = true;
+          if (maxPressure < currentPressure + pressure) {
+            maxPressure = currentPressure + pressure;
+          }
+          stack.push([node, true, timeLeft1 - distance - 1, currentNode2, false, timeLeft2, currentPressure + pressure, newValves]);
+        }
+      }
+    }
+
+    if (!busy2) {
+      for (let i = 0; i < nodes.length; ++i) {
+        const node = nodes[i];
+        const distance = distances[currentNode2.id][node.id];
+        if (node !== currentNode2 && !valves[node.id] && node.rate > 0 && timeLeft2 - distance - 1 > 0) {
+          const pressure = node.rate * (timeLeft2 - distance - 1);
+          const newValves = [...valves];
+          newValves[node.id] = true;
+          if (maxPressure < currentPressure + pressure) {
+            maxPressure = currentPressure + pressure;
+          }
+          stack.push([currentNode1, false, timeLeft1, node, true, timeLeft2 - distance - 1, currentPressure + pressure, newValves]);
+        }
+      }
     }
   }
-  
-  return stack;
+  return maxPressure;
+}
+
+function calculateDistances(nodes) {
+  const distances = [];
+  for (let i = 0; i < nodes.length; ++i) {
+    distances.push(new Array(nodes.length).fill(Infinity));
+  }
+
+  for (let i = 0; i < nodes.length; ++i) {
+    distances[i][i] = 0;
+
+    const stack = [nodes[i]];
+    while (stack.length > 0) {
+      const currentNode = stack.pop();
+      for (const neighbor of currentNode.neighbors) {
+        if (distances[i][neighbor.id] >= distances[i][currentNode.id] + 1) {
+          distances[i][neighbor.id] = distances[neighbor.id][i] = distances[i][currentNode.id] + 1;
+          stack.push(neighbor);
+        }
+      }
+    }
+  }
+  return distances;
+}
+
+function Valve(valveName, id, rate, neighbors) {
+  this.name = valveName;
+  this.id = id;
+  this.rate = rate;
+  this.neighbors = neighbors;
 }
