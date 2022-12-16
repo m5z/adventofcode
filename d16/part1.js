@@ -1,7 +1,7 @@
 const fs = require('fs');
 const readline = require('readline');
 
-const INPUT_FILE = 'in0';
+const INPUT_FILE = 'in1';
 const MAX_TIME = 30;
 
 async function processLineByLine() {
@@ -14,12 +14,15 @@ async function processLineByLine() {
 
   const nodes = [];
   const nameToNode = new Map();
+  let currentId = 0;
+
   for await (const line of line_reader) {
     const split = line.split(';')
     const valveName = split[0].split(' ')[1];
     const rate = +split[0].split('=')[1];
     const neighbors = split[1].replace(" valve ", " valves ").split(" valves ")[1].split(", ");
-    const node = new Node(rate, neighbors);
+    const node = new Valve(valveName, currentId, rate, neighbors);
+    ++currentId;
     nameToNode.set(valveName, node);
     nodes.push(node);
   }
@@ -30,35 +33,67 @@ async function processLineByLine() {
     }
   }
 
-  traverse(nameToNode.get("AA"));
-  
-  console.log(nameToNode);
+  const distances = calculateDistances(nodes);
+
+  const maxPressure = getMaxPressure(nodes, distances, nameToNode.get("AA"));
+  console.log(maxPressure);
 }
 
 processLineByLine();
 
-function traverse(node) {
-  if (!node.valveOpen && node.rate > 0) {
-    node.valveOpen = true;
-    node.timeToEnter += 1;
-    node.totalPressure += node.rate * (MAX_TIME - node.timeToEnter);
+function getMaxPressure(nodes, distances, startingNode) {
+  const stack = [[startingNode, MAX_TIME, 0, new Array(nodes.length).fill(false)]];
 
-    for (const neighbor of node.neighbors) {
-      if (node.timeToEnter + 1 < MAX_TIME 
-        && neighbor.timeToEnter < node.timeToEnter 
-        && neighbor.totalPressure <= node.rate * (MAX_TIME - node.timeToEnter)) {
-        neighbor.timeToEnter = node.timeToEnter + 1;
-        neighbor.totalPressure = node.rate * (MAX_TIME - node.timeToEnter);
-        traverse(neighbor);
+  let maxPressure = 0;
+  while (stack.length > 0) {
+    const currentState = stack.pop();
+    const currentNode = currentState[0];
+    const timeLeft = currentState[1];
+    const currentPressure = currentState[2];
+    const valves = currentState[3];
+
+    for (const node of nodes) {
+      const distance = distances[currentNode.id][node.id];
+      if (node !== currentNode && !valves[node.id] && node.rate > 0 && timeLeft - distance - 1 > 0) {
+        const pressure = node.rate * (timeLeft - distance - 1);
+        const newValves = [...valves];
+        newValves[node.id] = true;
+        if (maxPressure < currentPressure + pressure) {
+          maxPressure = currentPressure + pressure;
+        }
+        stack.push([node, timeLeft - distance - 1, currentPressure + pressure, newValves]);
       }
     }
   }
+  return maxPressure;
 }
 
-function Node(rate, neighbors) {
+function calculateDistances(nodes) {
+  const distances = [];
+  for (let i = 0; i < nodes.length; ++i) {
+    distances.push(new Array(nodes.length).fill(Infinity));
+  }
+
+  for (let i = 0; i < nodes.length; ++i) {
+    distances[i][i] = 0;
+
+    const stack = [nodes[i]];
+    while (stack.length > 0) {
+      const currentNode = stack.pop();
+      for (const neighbor of currentNode.neighbors) {
+        if (distances[i][neighbor.id] >= distances[i][currentNode.id] + 1) {
+          distances[i][neighbor.id] = distances[neighbor.id][i] = distances[i][currentNode.id] + 1;
+          stack.push(neighbor);
+        }
+      }
+    }
+  }
+  return distances;
+}
+
+function Valve(valveName, id, rate, neighbors) {
+  this.name = valveName;
+  this.id = id;
   this.rate = rate;
   this.neighbors = neighbors;
-  this.valveOpen = false;
-  this.totalPressure = 0;
-  this.timeToEnter = 0;
 }
