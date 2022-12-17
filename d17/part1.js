@@ -1,10 +1,8 @@
 const fs = require('fs');
 const readline = require('readline');
 
-// const INPUT_FILE = 'in0';
 const INPUT_FILE = 'in1';
 const CHAMBER_WIDTH = 7;
-// const MAX_PIECES = 10;
 const MAX_PIECES = 2022;
 
 async function processLineByLine() {
@@ -56,19 +54,15 @@ async function processLineByLine() {
     let piecePosI = chamber.length + 3;
     let piecePosJ = 2;
 
-    // console.log('new piece', piece, currentPiece, piecePosI, piecePosJ);
-
     let falling = true;
     while (falling) {
       if (canMoveHorizontally(chamber, currentPiece, piecePosI, piecePosJ, jets[jet])) {
         piecePosJ += jets[jet];
-        // console.log("moved horizontally", piecePosI, piecePosJ, jet, jets[jet]);
       }
       jet = (jet + 1) % jets.length;
 
       if (canMoveVertically(chamber, currentPiece, piecePosI, piecePosJ)) {
         piecePosI -= 1;
-        // console.log("moved vertically", piecePosI, piecePosJ);
       } else {
         placePiece(chamber, currentPiece, piecePosI, piecePosJ);
         falling = false;
@@ -78,7 +72,6 @@ async function processLineByLine() {
     ++piece;
   }
 
-  // printChamber(chamber);
   console.log(chamber.length);
 }
 
@@ -111,8 +104,6 @@ function canMoveHorizontally(chamber, currentPiece, piecePosI, piecePosJ, direct
 }
 
 function canMoveVertically(chamber, currentPiece, piecePosI, piecePosJ) {
-  // console.log(piecePosI);
-
   if (piecePosI - 1 < 0) {
     return false;
   }
@@ -123,10 +114,6 @@ function canMoveVertically(chamber, currentPiece, piecePosI, piecePosJ) {
 
   for (let i = 0; i < currentPiece.length; ++i) {
     for (let j = 0; j < currentPiece[i].length; ++j) {
-      // console.log(i, j, piecePosI + i - 1 < chamber.length, currentPiece[i][j] === 1);
-      // if (piecePosI + i - 1 < chamber.length) {
-      //   console.log(chamber[piecePosI + i - 1][piecePosJ + j] === 1);
-      // }
       if (piecePosI + i - 1 < chamber.length && currentPiece[i][j] === 1 && chamber[piecePosI + i - 1][piecePosJ + j] === 1) {
         return false;
       }
@@ -141,8 +128,6 @@ function placePiece(chamber, currentPiece, piecePosI, piecePosJ) {
     chamber.push(new Array(CHAMBER_WIDTH).fill(0));
   }
 
-  // console.log(piecePosI, piecePosJ);
-
   for (let i = 0; i < currentPiece.length; ++i) {
     for (let j = 0; j < currentPiece[i].length; ++j) {
       if (currentPiece[i][j]) {
@@ -151,6 +136,3 @@ function placePiece(chamber, currentPiece, piecePosI, piecePosJ) {
     }
   }
 }
-
-// console.table(chamber);
-// 2800 < x < 3068
