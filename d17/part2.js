@@ -13,7 +13,6 @@ const CYCLE_START = 306;
 const CYCLE_LENGTH = 1705;
 const CYCLE_HEIGHT = 2582;
 
-// const MAX_PIECES = 2022;
 const MAX_PIECES = 1000000000000;
 
 async function processLineByLine() {
@@ -100,7 +99,7 @@ async function processLineByLine() {
 
     if (piece === CYCLE_START) {
       const skipCycles = Math.floor((MAX_PIECES - CYCLE_START) / CYCLE_LENGTH);
-      piece += (skipCycles - 2) * CYCLE_LENGTH;
+      piece += skipCycles * CYCLE_LENGTH;
     }
   }
   
@@ -126,7 +125,7 @@ async function processLineByLine() {
   // }
 
   // console.log(chamberNumbers);
-  console.log(chamber.length + (Math.floor((MAX_PIECES - CYCLE_START) / CYCLE_LENGTH) - 2) * CYCLE_HEIGHT);
+  console.log(chamber.length + Math.floor((MAX_PIECES - CYCLE_START) / CYCLE_LENGTH) * CYCLE_HEIGHT);
 }
 
 processLineByLine();
