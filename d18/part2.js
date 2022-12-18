@@ -12,10 +12,8 @@ async function processLineByLine() {
   });
 
   const cubes = [];
-  const sides = [];
   for await (const line of line_reader) {
     cubes.push(line.split(',').map(n => +n));
-    sides.push(6);
   }
 
   const areaSize = findAreaSize(cubes);
