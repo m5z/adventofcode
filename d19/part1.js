@@ -36,12 +36,8 @@ function rate(blueprint, blueprintId) {
   let maxGeodes = 0;
   const stack = [new State([1, 0, 0, 0], [0, 0, 0, 0], 24)];
 
-  let minOreCost = Infinity;
   let maxOreCost = 0;
   for (const robot of blueprint) {
-    if (robot.oreCost < minOreCost) {
-      minOreCost = robot.oreCost;
-    }
     if (robot.oreCost > maxOreCost) {
       maxOreCost = robot.oreCost;
     }
@@ -62,7 +58,7 @@ function rate(blueprint, blueprintId) {
     }
 
     if (state.timeLeft > 0) {
-      if (state.resources[0] < maxOreCost + 1 && state.resources[0] >= blueprint[0].oreCost) {
+      if (state.robots[0] < maxOreCost && state.resources[0] < maxOreCost + 1 && state.resources[0] >= blueprint[0].oreCost) {
         const newState = state.copy();
         newState.resources[0] -= blueprint[0].oreCost;
         for (let i = 0; i < state.robots.length; ++i) {
@@ -72,7 +68,7 @@ function rate(blueprint, blueprintId) {
         stack.push(newState);
       }
 
-      if (state.resources[1] < clayCost + 1 && state.resources[0] >= blueprint[1].oreCost) {
+      if (state.robots[1] < clayCost && state.resources[1] < clayCost + 1 && state.resources[0] >= blueprint[1].oreCost) {
         const newState = state.copy();
         newState.resources[0] -= blueprint[1].oreCost;
         for (let i = 0; i < state.robots.length; ++i) {
@@ -82,7 +78,7 @@ function rate(blueprint, blueprintId) {
         stack.push(newState);
       }
 
-      if (state.resources[2] < obsidianCost + 1 && state.resources[0] >= blueprint[2].oreCost && state.resources[1] >= blueprint[2].clayCost) {
+      if (state.robots[2] < obsidianCost && state.resources[2] < obsidianCost + 1 && state.resources[0] >= blueprint[2].oreCost && state.resources[1] >= blueprint[2].clayCost) {
         const newState = state.copy();
         newState.resources[0] -= blueprint[2].oreCost;
         newState.resources[1] -= blueprint[2].clayCost;
