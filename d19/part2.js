@@ -46,7 +46,9 @@ function rate(blueprint, blueprintId) {
   const clayCost = blueprint[2].clayCost;
   const obsidianCost = blueprint[3].obsidianCost;
 
+  let iterations = 0;
   while (stack.length > 0) {
+    iterations++;
     // console.log(stack.length);
 
     const state = stack.pop();
@@ -57,10 +59,10 @@ function rate(blueprint, blueprintId) {
       maxGeodes = state.resources[3];
     }
 
-    console.log(state.robots);
+    const potentialMaxGeodes = state.resources[3] + (state.resources[3] + 1 + state.timeLeft) * state.timeLeft / 2;
 
-    if (state.timeLeft > 0) {
-      if (state.robots[0] < maxOreCost && state.resources[0] < maxOreCost + 1 && state.resources[0] >= blueprint[0].oreCost) {
+    if (state.timeLeft > 0 && potentialMaxGeodes > maxGeodes) {
+      if (state.robots[0] < maxOreCost && state.resources[0] <= maxOreCost && state.resources[0] >= blueprint[0].oreCost) {
         const newState = state.copy();
         newState.resources[0] -= blueprint[0].oreCost;
         for (let i = 0; i < state.robots.length; ++i) {
@@ -70,7 +72,7 @@ function rate(blueprint, blueprintId) {
         stack.push(newState);
       }
 
-      if (state.robots[1] < clayCost && state.resources[1] < clayCost + 1 && state.resources[0] >= blueprint[1].oreCost) {
+      if (state.robots[1] < clayCost && state.resources[1] <= clayCost && state.resources[0] >= blueprint[1].oreCost) {
         const newState = state.copy();
         newState.resources[0] -= blueprint[1].oreCost;
         for (let i = 0; i < state.robots.length; ++i) {
@@ -80,7 +82,7 @@ function rate(blueprint, blueprintId) {
         stack.push(newState);
       }
 
-      if (state.robots[2] < obsidianCost && state.resources[2] < obsidianCost + 1 && state.resources[0] >= blueprint[2].oreCost && state.resources[1] >= blueprint[2].clayCost) {
+      if (state.robots[2] < obsidianCost && state.resources[2] <= obsidianCost && state.resources[0] >= blueprint[2].oreCost && state.resources[1] >= blueprint[2].clayCost) {
         const newState = state.copy();
         newState.resources[0] -= blueprint[2].oreCost;
         newState.resources[1] -= blueprint[2].clayCost;
@@ -102,7 +104,7 @@ function rate(blueprint, blueprintId) {
         stack.push(newState);
       }
 
-      if (state.resources[0] < maxGeodes + 1 || state.resources[1] < clayCost + 1 || state.resources[2] < obsidianCost + 1) {
+      if (state.resources[0] <= maxOreCost || state.resources[1] <= clayCost || state.resources[2] <= obsidianCost) {
         for (let i = 0; i < state.robots.length; ++i) {
           state.resources[i] += state.robots[i];
         }
@@ -112,7 +114,7 @@ function rate(blueprint, blueprintId) {
     }
   }
 
-  console.log(`Blueprint ${blueprintId}: ${maxGeodes}`);
+  console.log(`Blueprint ${blueprintId}: ${maxGeodes}, iterations: ${iterations}`);
   return maxGeodes;
 }
 
