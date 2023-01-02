@@ -54,7 +54,7 @@ async function processLineByLine() {
   }
 
   traversed[end[0]][end[1]] = 0;
-  traverse([end[0], end[1]]);
+  traverse(end);
  
   let minSteps = Infinity;
   

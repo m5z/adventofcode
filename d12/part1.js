@@ -37,22 +37,18 @@ async function processLineByLine() {
 
   function traverse(from) {
     if (from[0] > 0 && canGo(from, [from[0] - 1, from[1]])) {
-      // console.log('down');
       traversed[from[0] - 1][from[1]] = traversed[from[0]][from[1]] + 1;
       traverse([from[0] - 1, from[1]]);
     }
     if (from[0] < terrain.length - 1 && canGo(from, [from[0] + 1, from[1]])) {
-      // console.log('up');
       traversed[from[0] + 1][from[1]] = traversed[from[0]][from[1]] + 1;
       traverse([from[0] + 1, from[1]]);
     }
     if (from[1] > 0 && canGo(from, [from[0], from[1] - 1])) {
-      // console.log('left');
       traversed[from[0]][from[1] - 1] = traversed[from[0]][from[1]] + 1;
       traverse([from[0], from[1] - 1]);
     }
     if (from[1] < terrain[0].length - 1 && canGo(from, [from[0], from[1] + 1])) {
-      // console.log('right');
       traversed[from[0]][from[1] + 1] = traversed[from[0]][from[1]] + 1;
       traverse([from[0], from[1] + 1]);
     }
