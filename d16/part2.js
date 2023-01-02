@@ -46,7 +46,6 @@ function getMaxPressure(nodes, distances, startingNode) {
 
   let maxPressure = 0;
   while (stack.length > 0) {
-    // console.log(stack.length);
 
     const state = stack.pop();
     const currentNode1 = state[0];
