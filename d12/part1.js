@@ -9,7 +9,7 @@ async function processLineByLine() {
     crlfDelay: Infinity
   });
 
-  const terrain = []
+  const terrain = [];
   const traversed = [];
   for await (const line of line_reader) {
     const split = line.split('');
@@ -31,7 +31,7 @@ async function processLineByLine() {
   }
 
   function canGo(from, to) {
-    return (terrain[to[0]][to[1]].charCodeAt(0) - terrain[from[0]][from[1]].charCodeAt(0) <= 1 
+    return (terrain[to[0]][to[1]].charCodeAt(0) <= terrain[from[0]][from[1]].charCodeAt(0) + 1 
       && traversed[to[0]][to[1]] > traversed[from[0]][from[1]] + 1);
   }
 
