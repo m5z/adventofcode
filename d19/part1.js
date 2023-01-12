@@ -59,7 +59,7 @@ function rate(blueprint, blueprintId) {
       maxGeodes = state.resources[3];
     }
 
-    const potentialMaxGeodes = state.resources[3] + (state.resources[3] + 1 + state.timeLeft) * state.timeLeft / 2;
+    const potentialMaxGeodes = state.resources[3] + (state.resources[3] + state.timeLeft) * state.timeLeft / 2;
 
     if (state.timeLeft > 0 && potentialMaxGeodes > maxGeodes) {
       if (state.robots[0] < maxOreCost && state.resources[0] <= maxOreCost && state.resources[0] >= blueprint[0].oreCost) {
