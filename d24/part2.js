@@ -42,7 +42,7 @@ function calculateBestTime(boards, startPosI, startPosJ, startMinutes, finishPos
 
   const stack = [[startPosI, startPosJ, startMinutes]];
   while (stack.length > 0) {
-    const [posI, posJ, minutes] = stack.pop();
+    const [posI, posJ, minutes] = stack.shift();
 
     const boardId = (minutes + 1) % boards.length;
     if (posI - 1 >= 0 && !boards[boardId][posI - 1][posJ] && minutes + 1 < bestTimes[boardId][posI - 1][posJ]) {
