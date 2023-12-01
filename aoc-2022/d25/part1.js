@@ -93,3 +93,12 @@ function snafuToDec(snafu) {
   }
   return dec;
 }
+
+function decToSnafu(dec) {
+  let snafu = '';
+  while (dec > 0) {
+    snafu = decToSnafuChar((dec + 2) % 5 - 2) + snafu;
+    dec = Math.floor((dec + 2) / 5);
+  }
+  return snafu;
+}
